@@ -5,7 +5,7 @@ const app = express();
 var fortune = require('./lib/fortune.js');
 
 var handlebars = require('express-handlebars')
-.create({ defaultLayout:'main' });
+  .create({ defaultLayout: 'main' });
 
 app.engine('handlebars', handlebars.engine);
 
@@ -15,9 +15,9 @@ app.set('port', process.env.PORT || 3000);
 
 app.use(express.static(__dirname + '/public'));
 
-app.use(function(req, res, next){
+app.use(function (req, res, next) {
   res.locals.showTests = app.get('env') !== 'production' &&
-  req.query.test === '1';
+    req.query.test === '1';
   next();
 });
 
@@ -27,14 +27,23 @@ app.get('/', (req, res) => {
   res.render('home')
 })
 
+
 app.get('/about', (req, res) => {
   // res.type('text/plain');
   // res.send('Page about');
   res.render('about', {
     fortune: fortune.getFortune(),
     pageTestScript: '/qa/tests-about.js'
-    });
+  });
 })
+
+app.get('/tours/hood-river', (req, res) => {
+  res.render('tours/hood-river');
+});
+
+app.get('/tours/request-group-rate', (req, res) => {
+  res.render('tours/request-group-rate');
+});
 
 app.use((req, res) => {
   // res.type('text/plain');
