@@ -1,11 +1,13 @@
 const express = require('express');
 
+const formidable = require('formidable');
+
 const app = express();
 
 var fortune = require('./lib/fortune.js');
 
 var handlebars = require('express-handlebars')
-  .create({ 
+  .create({
     defaultLayout: 'main',
     helpers: {
       section: (name, options) => {
@@ -14,8 +16,7 @@ var handlebars = require('express-handlebars')
         return null;
       }
     }
-});
-
+  });
 
 function getWeatherData() {
   return {
@@ -66,6 +67,7 @@ app.use(function (req, res, next) {
   next();
 });
 
+
 app.get('/', (req, res) => {
   // res.type('text/plain');
   // res.send('Mardown travel')
@@ -81,6 +83,41 @@ app.get('/about', (req, res) => {
     pageTestScript: '/qa/tests-about.js'
   });
 })
+
+app.use(require('body-parser').urlencoded({ extended: true }));
+
+app.get('/newsletter', function (req, res) {
+  // мы изучим CSRF позже... сейчас мы лишь
+  // заполняем фиктивное значение
+  res.render('newsletter', { csrf: 'CSRF token goes here' });
+});
+
+app.get('/contest/vacation-photo', function (req, res) {
+  var now = new Date();
+  res.render('contest/vacation-photo', {
+    year: now.getFullYear(), month: now.getMonth()
+  });
+});
+
+app.post('/contest/vacation-photo/:year/:month', function (req, res) {
+  var form = new formidable.IncomingForm();
+  form.parse(req, function (err, fields, files) {
+    if (err) return res.redirect(303, '/error');
+    console.log('received fields:');
+    console.log(fields);
+    console.log('received files:');
+    console.log(files);
+    res.redirect(303, '/thank-you');
+  });
+});
+
+app.post('/process', (req, res) => {
+  console.log('Form (from querystring): ' + req.query.form);
+  console.log('CSRF token (from hidden form field): ' + req.body._csrf);
+  console.log('Name (from visible form field): ' + req.body.name);
+  console.log('Email (from visible form field): ' + req.body.email);
+  res.redirect(303, '/thank-you'); // Redirect on other page
+});
 
 app.get('/tours/hood-river', (req, res) => {
   res.render('tours/hood-river');
